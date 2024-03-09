@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import 'vant/lib/index.css'
-import Index from "../pages/Index.vue";
-import Team from "../pages/Team.vue";
-
-  const onClickLeft = () => alert("左边");
-  const onClickRight = () => alert("右边");
-  const active = ref('home');
+import {useRouter} from "vue-router";
+  const router = useRouter()
+  const onClickLeft = () => {
+    router.push({path: "/"})
+  };
+  const onClickRight = () => {
+    router.push({path: "/search"})
+  };
 </script>
 
 <template>
@@ -21,19 +22,12 @@ import Team from "../pages/Team.vue";
     </template>
   </van-nav-bar>
 
-  <div id="content">
-    <template v-if="active === 'home'">
-      <Index />
-    </template>
-    <template v-if="active === 'team'">
-      <Team />
-    </template>
-  </div>
+  <router-view />
 
-  <van-tabbar v-model="active">
-    <van-tabbar-item icon="home-o" name="home">主页</van-tabbar-item>
-    <van-tabbar-item icon="search" name="team">队伍</van-tabbar-item>
-    <van-tabbar-item icon="friends-o" name="person">个人</van-tabbar-item>
+  <van-tabbar route>
+    <van-tabbar-item icon="home-o" to="/"  name="home">主页</van-tabbar-item>
+    <van-tabbar-item icon="search" to="/team" name="team">队伍</van-tabbar-item>
+    <van-tabbar-item icon="friends-o" to="/user"  name="user">个人</van-tabbar-item>
   </van-tabbar>
 
 </template>
