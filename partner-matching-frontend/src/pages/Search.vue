@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import {ref} from "vue";
+import {useRouter} from "vue-router";
 
 const activeIds = ref([]);
 const activeIndex = ref(0);
 const searchValue = ref('')
+const router = useRouter()
 
 const originTagList = [{
   text: '性别',
@@ -58,6 +60,18 @@ const click = () => {
   tagList.value = originTagList
 }
 
+/**
+ * 根据选择的标签进行搜索用户
+ */
+const doSearchResult = () => {
+  router.push({
+    path: "/search/result",
+    query: {
+      tags: activeIds.value
+    }
+  })
+}
+
 </script>
 
 <template>
@@ -91,6 +105,9 @@ const click = () => {
       @click="click"
   />
 
+  <div style="padding: 12px">
+    <van-button block type="primary" @click="doSearchResult">搜索</van-button>
+  </div>
 
 </template>
 

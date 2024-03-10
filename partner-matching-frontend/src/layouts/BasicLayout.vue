@@ -3,10 +3,11 @@ import 'vant/lib/index.css'
 import {useRouter} from "vue-router";
   const router = useRouter()
   const onClickLeft = () => {
-    router.push({path: "/"})
+    // router.push({path: "/"})
+    router.back()
   };
   const onClickRight = () => {
-    router.push({path: "/search"})
+    router.push("/search")
   };
 </script>
 
@@ -22,7 +23,9 @@ import {useRouter} from "vue-router";
     </template>
   </van-nav-bar>
 
-  <router-view />
+  <div id="content">
+    <router-view/>
+  </div>
 
   <van-tabbar route>
     <van-tabbar-item icon="home-o" to="/"  name="home">主页</van-tabbar-item>

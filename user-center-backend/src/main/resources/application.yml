@@ -1,6 +1,7 @@
 # 公共配置文件
-
 spring:
+  profiles:
+    active: dev
   application:
     name: user-center-backend
   # DataSource Config
@@ -12,6 +13,16 @@ spring:
   # session 失效时间
   session:
     timeout: 86400
+    # 设置 session 使用 redis 进行存储
+    store-type: redis
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  # redis 配置
+  redis:
+    port: 6379
+    database: 3
+    host: localhost
 server:
   port: 8080
   servlet:

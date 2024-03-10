@@ -42,8 +42,6 @@ public interface UserService extends IService<User> {
      */
     User getSafetyUser(User originUser);
 
-    // [加入编程导航](https://t.zsxq.com/0emozsIJh) 深耕编程提升【两年半】、国内净值【最高】的编程社群、用心服务【20000+】求学者、帮你自学编程【不走弯路】
-
     /**
      * 用户注销
      *
@@ -53,4 +51,10 @@ public interface UserService extends IService<User> {
     int userLogout(HttpServletRequest request);
 
     List<User> searchUserByTags(List<String> tagNameList);
+
+    boolean isAdmin(HttpServletRequest request);
+
+    int updateUserInfo(User user, HttpServletRequest request);
+
+    User getLoginUser(HttpServletRequest request);
 }

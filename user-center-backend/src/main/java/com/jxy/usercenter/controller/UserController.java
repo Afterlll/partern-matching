@@ -9,6 +9,7 @@ import com.jxy.usercenter.model.domain.User;
 import com.jxy.usercenter.model.domain.request.UserLoginRequest;
 import com.jxy.usercenter.model.domain.request.UserRegisterRequest;
 import com.jxy.usercenter.service.UserService;
+import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +28,7 @@ import static com.jxy.usercenter.contant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(allowCredentials = "true", originPatterns = {"http://localhost:5173"})
 public class UserController {
 
     @Resource
@@ -115,7 +117,7 @@ public class UserController {
 
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH, "缺少管理员权限");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -129,7 +131,7 @@ public class UserController {
 
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         if (id <= 0) {
@@ -139,18 +141,7 @@ public class UserController {
         return ResultUtils.success(b);
     }
 
-    /**
-     * 是否为管理员
-     *
-     * @param request
-     * @return
-     */
-    private boolean isAdmin(HttpServletRequest request) {
-        // 仅管理员可查询
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User user = (User) userObj;
-        return user != null && user.getUserRole() == ADMIN_ROLE;
-    }
+
 
     /**
      * 根据标签列表搜索用户
@@ -158,8 +149,23 @@ public class UserController {
      * @param tagNameList
      * @return
      */
-    public List<User> searchUserByTags(List<String> tagNameList) {
-        return userService.searchUserByTags(tagNameList);
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList) {
+        return ResultUtils.success(userService.searchUserByTags(tagNameList));
+    }
+
+    /**
+     * 更改用户信息
+     * @param user
+     * @return
+     */
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUserInfo(@RequestBody User user, HttpServletRequest request) {
+        if (user == null || user.getId() == null || user.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        userService.getLoginUser(request);
+        return ResultUtils.success(userService.updateUserInfo(user, request));
     }
 
 }

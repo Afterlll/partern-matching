@@ -9,6 +9,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jxy.usercenter.common.ErrorCode;
+import com.jxy.usercenter.contant.UserConstant;
 import com.jxy.usercenter.exception.BusinessException;
 import com.jxy.usercenter.model.domain.User;
 import com.jxy.usercenter.service.UserService;
@@ -27,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.jxy.usercenter.contant.UserConstant.ADMIN_ROLE;
 import static com.jxy.usercenter.contant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -195,8 +197,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return 1;
     }
 
-    @Override
-    public List<User> searchUserByTags(List<String> tagNameList) {
+    /**
+     * 根据标签搜索用户（SQL查询）
+     * @param tagNameList
+     * @return
+     */
+    @Deprecated
+    public List<User> searchUserBySQL(List<String> tagNameList) {
         if (CollUtil.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -207,8 +214,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return userMapper.selectList(queryWrapper).stream().map(this::getSafetyUser).collect(Collectors.toList());
     }
 
-    public List<User> searchUserByTags1(List<String> tagNameList) {
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+    /**
+     * 根据标签搜索用户（内存过滤）
+     *
+     * @param tagNameList
+     * @return
+     */
+    public List<User> searchUserByTags(List<String> tagNameList) {
         Set<String> tagSet = new HashSet<>(tagNameList);
 
         // 1. 先查询出所有的用户
@@ -217,6 +229,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return userList.stream().filter(user -> {
             // 根据标签进行过滤
             String tags = user.getTags();
+            if (StrUtil.isBlank(tags)) {
+                return false;
+            }
             JSONArray jsonArray = JSONUtil.parseArray(tags);
             List<String> tagList = JSONUtil.toList(jsonArray, String.class);
             for (String tag : tagList) {
@@ -225,7 +240,53 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 }
             }
             return false;
-        }).collect(Collectors.toList());
+        }).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    /**
+     * 是否为管理员
+     *
+     * @param request
+     * @return
+     */
+    public boolean isAdmin(HttpServletRequest request) {
+        // 仅管理员可查询
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User) userObj;
+        return user != null && user.getUserRole() == ADMIN_ROLE;
+    }
+
+    /**
+     * 获取登录用户信息
+     */
+    public User getLoginUser(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (userObj == null) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        return (User) userObj;
+    }
+
+    @Override
+    public int updateUserInfo(User user, HttpServletRequest request) {
+        Long userId = user.getId();
+        if (userId == null || userId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = getLoginUser(request);
+        // 如果是管理员，允许更新任意用户
+        // 如果不是管理员，只允许更新当前（自己的）信息
+        if (!isAdmin(request) && !userId.equals(loginUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User oldUser = userMapper.selectById(userId);
+        if (oldUser == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        return userMapper.updateById(user);
     }
 
 }
