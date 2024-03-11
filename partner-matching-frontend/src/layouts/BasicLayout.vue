@@ -36,5 +36,7 @@ import {useRouter} from "vue-router";
 </template>
 
 <style scoped>
-
+#content {
+  padding-bottom: 80px;
+}
 </style>
