@@ -1,5 +1,7 @@
 package com.jxy.usercenter.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.jxy.usercenter.common.BaseResponse;
 import com.jxy.usercenter.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -57,4 +59,14 @@ public interface UserService extends IService<User> {
     int updateUserInfo(User user, HttpServletRequest request);
 
     User getLoginUser(HttpServletRequest request);
+
+    IPage<User> recommendUsers(long pageCurrent, long pageSize, HttpServletRequest request);
+
+    /**
+     * 获取用户推荐缓存可以
+     * @param userId
+     * @return
+     */
+    String getRecommendKey(long userId);
+
 }

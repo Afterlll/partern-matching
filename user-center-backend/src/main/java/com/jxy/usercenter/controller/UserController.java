@@ -1,6 +1,8 @@
 package com.jxy.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jxy.usercenter.common.BaseResponse;
 import com.jxy.usercenter.common.ErrorCode;
 import com.jxy.usercenter.common.ResultUtils;
@@ -113,8 +115,6 @@ public class UserController {
         return ResultUtils.success(safetyUser);
     }
 
-    // https://jxy.icu/
-
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
         if (!userService.isAdmin(request)) {
@@ -127,6 +127,18 @@ public class UserController {
         List<User> userList = userService.list(queryWrapper);
         List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
         return ResultUtils.success(list);
+    }
+
+    /**
+     * 推荐用户
+     * @param pageCurrent 请求第几页的数据
+     * @param pageSize 一页多少条数据
+     * @param request
+     * @return
+     */
+    @GetMapping("/recommend")
+    public BaseResponse<IPage<User>> recommendUsers(long pageCurrent, long pageSize, HttpServletRequest request) {
+        return ResultUtils.success(userService.recommendUsers(pageCurrent, pageSize, request));
     }
 
     @PostMapping("/delete")

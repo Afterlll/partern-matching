@@ -1,4 +1,4 @@
-package com.jxy.usercenter.once;
+package com.jxy.usercenter.once.excel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;

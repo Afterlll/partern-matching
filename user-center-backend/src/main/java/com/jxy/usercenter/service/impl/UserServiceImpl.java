@@ -7,8 +7,12 @@ import cn.hutool.json.JSON;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jxy.usercenter.common.BaseResponse;
 import com.jxy.usercenter.common.ErrorCode;
+import com.jxy.usercenter.common.ResultUtils;
 import com.jxy.usercenter.contant.UserConstant;
 import com.jxy.usercenter.exception.BusinessException;
 import com.jxy.usercenter.model.domain.User;
@@ -16,6 +20,7 @@ import com.jxy.usercenter.service.UserService;
 import com.jxy.usercenter.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -24,6 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,6 +51,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Resource
     private UserMapper userMapper;
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 盐值，混淆密码
@@ -268,6 +277,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         return (User) userObj;
+    }
+
+    @Override
+    public IPage<User> recommendUsers(long pageCurrent, long pageSize, HttpServletRequest request) {
+        User loginUser = getLoginUser(request);
+        // 1. 缓存命中
+        String recommendKey = getRecommendKey(loginUser.getId());
+        String redisValue = stringRedisTemplate.opsForValue().get(recommendKey);
+        if (StrUtil.isNotBlank(redisValue)) {
+            return new Page<User>().setRecords(JSONUtil.toBean(redisValue, new TypeReference<List<User>>(){}, false));
+        }
+        // 2， 缓存未命中
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        IPage<User> userList = page(new Page<>(pageCurrent, pageSize), queryWrapper);
+        List<User> list = userList.getRecords().stream().map(this::getSafetyUser).collect(Collectors.toList());
+        // 异步写入缓存
+        CompletableFuture.runAsync(() -> {
+            stringRedisTemplate.opsForValue().set(recommendKey, JSONUtil.toJsonStr(list), 1, TimeUnit.DAYS);
+        });
+        return new Page<User>().setRecords(list);
+    }
+
+    /**
+     * 获取推荐用户的缓存 key
+     *
+     * @param userId
+     * @return
+     */
+    public String getRecommendKey(long userId) {
+        return String.format("partner:matching:user:recommend:%s", userId);
     }
 
     @Override
