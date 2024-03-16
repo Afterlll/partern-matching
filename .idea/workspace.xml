@@ -5,26 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f947bf79-26b8-40a0-89ba-de4741835f5d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/partner-matching-frontend/src/pages/team/Team.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/.vscode/extensions.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/components.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/components.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/config/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/config/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/main.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/pages/Index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/pages/Index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/pages/Search.vue" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/pages/search/Search.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/pages/SearchResult.vue" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/pages/search/SearchResult.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/pages/Team.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/pages/User.vue" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/pages/user/UserUpdate.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/pages/UserEditPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/pages/user/UserEditPage.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/pages/UserLoginPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/pages/user/UserLoginPage.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/plugins/myAxios.ts" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/plugins/myAxios.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/vite-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/vite-env.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-center-backend/src/main/java/com/jxy/usercenter/controller/TeamController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-center-backend/src/main/java/com/jxy/usercenter/controller/TeamController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-center-backend/src/main/java/com/jxy/usercenter/model/vo/TeamVo.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-center-backend/src/main/java/com/jxy/usercenter/model/vo/TeamVo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-center-backend/src/main/java/com/jxy/usercenter/service/TeamService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-center-backend/src/main/java/com/jxy/usercenter/service/TeamService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-center-backend/src/main/java/com/jxy/usercenter/service/impl/TeamServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-center-backend/src/main/java/com/jxy/usercenter/service/impl/TeamServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/layouts/BasicLayout.vue" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/layouts/BasicLayout.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-center-backend/README.md" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,6 +99,9 @@
     </key>
     <key name="CreateTestDialog.Recents.Supers">
       <recent name="" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\code\project\partner-matching" />
     </key>
     <key name="CreateTestDialog.RecentsKey">
       <recent name="com.jxy.usercenter.utils" />
@@ -243,7 +229,7 @@
       <workItem from="1710060608915" duration="12489000" />
       <workItem from="1710122001342" duration="26707000" />
       <workItem from="1710297607019" duration="26135000" />
-      <workItem from="1710469221763" duration="25718000" />
+      <workItem from="1710469221763" duration="26555000" />
     </task>
     <servers />
   </component>

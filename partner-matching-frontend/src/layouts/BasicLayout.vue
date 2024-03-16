@@ -1,7 +1,23 @@
 <script setup lang="ts">
 import 'vant/lib/index.css'
 import {useRouter} from "vue-router";
+import {ref} from "vue";
+import routes from "../config/route.ts";
   const router = useRouter()
+const DEFAULT_TITLE = '伙伴匹配';
+const title = ref(DEFAULT_TITLE);
+
+/**
+ * 根据路由切换标题
+ */
+router.beforeEach((to, from) => {
+  const toPath = to.path;
+  const route = routes.find((route) => {
+    return toPath == route.path;
+  })
+  title.value = route?.title ?? DEFAULT_TITLE;
+})
+
   const onClickLeft = () => {
     // router.push({path: "/"})
     router.back()
@@ -13,7 +29,7 @@ import {useRouter} from "vue-router";
 
 <template>
   <van-nav-bar
-      title="标题"
+      :title="title"
       left-arrow
       @click-left="onClickLeft"
       @click-right="onClickRight"

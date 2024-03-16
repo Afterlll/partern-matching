@@ -14,17 +14,17 @@ import TeamUpdatePage from "../pages/team/TeamUpdatePage.vue";
 
 const routes = [
     { path: '/', component: Index },
-    { path: '/team', component: Team },
-    { path: '/team/add', component: TeamAddPage },
-    { path: '/team/update', component: TeamUpdatePage },
-    { path: '/user', component: UserPage },
-    { path: '/user/edit', component: UserEditPage },
-    { path: '/user/update', component: UserUpdate },
-    { path: '/user/team/create', component: UserTeamCreatePage },
-    { path: '/user/team/join', component: UserTeamJoinPage },
-    { path: '/search', component: Search },
+    { path: '/team', title: '找队伍', component: Team },
+    { path: '/team/add', title: '创建队伍', component: TeamAddPage },
+    { path: '/team/update', title: '更新队伍',  component: TeamUpdatePage },
+    { path: '/user',  title: '个人信息', component: UserPage },
+    { path: '/user/edit', title: '编辑信息', component: UserEditPage },
+    { path: '/user/update', title: '更新信息',  component: UserUpdate },
+    { path: '/user/team/create',  title: '创建队伍', component: UserTeamCreatePage },
+    { path: '/user/team/join', title: '加入队伍', component: UserTeamJoinPage },
+    { path: '/search', title: '找伙伴',  component: Search },
     { path: '/search/result', component: SearchResult },
-    { path: '/user/login', component: UserLoginPage },
+    { path: '/user/login', title: '登录',  component: UserLoginPage },
 ]
 
 export default routes;
