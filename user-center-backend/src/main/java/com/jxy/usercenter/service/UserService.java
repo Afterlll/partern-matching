@@ -69,4 +69,5 @@ public interface UserService extends IService<User> {
      */
     String getRecommendKey(long userId);
 
+    List<User> matchUsers(long num, HttpServletRequest request);
 }

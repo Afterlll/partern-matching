@@ -2,16 +2,15 @@ package com.jxy.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jxy.usercenter.common.BaseResponse;
 import com.jxy.usercenter.common.ErrorCode;
 import com.jxy.usercenter.common.ResultUtils;
 import com.jxy.usercenter.exception.BusinessException;
 import com.jxy.usercenter.model.domain.User;
-import com.jxy.usercenter.model.domain.request.UserLoginRequest;
-import com.jxy.usercenter.model.domain.request.UserRegisterRequest;
+import com.jxy.usercenter.model.request.UserLoginRequest;
+import com.jxy.usercenter.model.request.UserRegisterRequest;
+import com.jxy.usercenter.model.vo.UserTeamVo;
 import com.jxy.usercenter.service.UserService;
-import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.jxy.usercenter.contant.UserConstant.ADMIN_ROLE;
 import static com.jxy.usercenter.contant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -139,6 +137,18 @@ public class UserController {
     @GetMapping("/recommend")
     public BaseResponse<IPage<User>> recommendUsers(long pageCurrent, long pageSize, HttpServletRequest request) {
         return ResultUtils.success(userService.recommendUsers(pageCurrent, pageSize, request));
+    }
+
+    /**
+     * 按照标签相似度推荐相似用户
+     *
+     * @param num
+     * @param request
+     * @return
+     */
+    @GetMapping("/match")
+    public BaseResponse<List<User>> matchUsers(long num, HttpServletRequest request) {
+        return ResultUtils.success(userService.matchUsers(num, request));
     }
 
     @PostMapping("/delete")

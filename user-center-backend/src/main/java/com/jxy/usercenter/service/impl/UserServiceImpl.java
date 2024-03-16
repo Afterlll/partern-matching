@@ -1,6 +1,7 @@
 package com.jxy.usercenter.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSON;
@@ -18,6 +19,8 @@ import com.jxy.usercenter.exception.BusinessException;
 import com.jxy.usercenter.model.domain.User;
 import com.jxy.usercenter.service.UserService;
 import com.jxy.usercenter.mapper.UserMapper;
+import com.jxy.usercenter.utils.DistinctUtil;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -26,9 +29,8 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import javax.swing.event.MenuKeyListener;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -307,6 +309,43 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     public String getRecommendKey(long userId) {
         return String.format("partner:matching:user:recommend:%s", userId);
+    }
+
+    @Override
+    public List<User> matchUsers(long num, HttpServletRequest request) {
+        User loginUser = getLoginUser(request);
+        List<String> loginUserTagList = JSONUtil.toBean(loginUser.getTags(), new TypeReference<List<String>>() {
+        }, false);
+        // 大根堆，每次剔除编辑距离较大的值
+        PriorityQueue<Pair<Long, Integer>> usersQueue = new PriorityQueue<>((int) num, (o1, o2) -> o2.getValue() - o1.getValue());
+        // 查询出所有的用户列表
+        List<User> userList = list(new QueryWrapper<User>().select("id", "tags").ne("tags", "[]").ne("id", loginUser.getId()));
+        for (User user : userList) {
+            int distance = DistinctUtil.minDistanceTags(loginUserTagList,
+                    JSONUtil.toBean(user.getTags(), new TypeReference<List<String>>() {}, false));
+            if (usersQueue.size() < num) {
+                usersQueue.add(new Pair<>(user.getId(), distance));
+            } else if (usersQueue.element().getValue() > distance) {
+                usersQueue.remove();
+                usersQueue.add(new Pair<>(user.getId(), distance));
+            }
+        }
+        List<Long> ids = new ArrayList<>();
+        while (!usersQueue.isEmpty()) {
+            ids.add(usersQueue.remove().getKey());
+        }
+        Collections.reverse(ids);
+        /*
+        SELECT * FROM your_table
+        WHERE id IN (1, 3, 2)
+        ORDER BY FIELD(id, 1, 3, 2);
+        使用以上SQL语句保证从数据库查出来的数据不被打乱
+         */
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", ids);
+        String jsonStr = JSONUtil.toJsonStr(ids);
+        queryWrapper.last("ORDER BY FIELD(id, " + jsonStr.substring(1, jsonStr.length() - 1) + ")");
+        return userMapper.selectList(queryWrapper).stream().map(this::getSafetyUser).collect(Collectors.toList());
     }
 
     @Override
