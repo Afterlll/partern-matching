@@ -13,19 +13,23 @@
 
 
 找伙伴：
+
 ![img_5.png](img%2Fimg_5.png)
 
 
 组队功能：
+
 ![img_1.png](img%2Fimg_1.png)
 
 
 
 创建队伍：
+
 ![img_2.png](img%2Fimg_2.png)
 
 
 个人信息及修改：
+
 ![img_3.png](img%2Fimg_3.png)
 ![img_4.png](img%2Fimg_4.png)
 
