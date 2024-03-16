@@ -10,6 +10,7 @@ import com.jxy.usercenter.model.request.TeamUpdateRequest;
 import com.jxy.usercenter.model.vo.TeamVo;
 import com.jxy.usercenter.model.vo.UserTeamVo;
 import com.jxy.usercenter.service.TeamService;
+import io.swagger.models.auth.In;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -17,8 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /*
-* 队伍控制器请求
-*/
+ * 队伍控制器请求
+ */
 @RestController
 @RequestMapping("/team")
 @CrossOrigin(allowCredentials = "true", originPatterns = {"http://localhost:5173"})
@@ -69,20 +70,26 @@ public class TeamController {
      * @param id
      * @return
      */
-    @GetMapping("/get/{id}")
-    public BaseResponse<TeamVo> getTeamById(@PathVariable Long id) {
+    @GetMapping("/get")
+    public BaseResponse<TeamVo> getTeamById(@RequestParam("id") Long id) {
         return ResultUtils.success(teamService.getTeamById(id));
     }
 
     /**
      * 获取所有队伍信息
      *
+     * @param searchText
+     * @param pageNum
+     * @param status
      * @param request
      * @return
      */
     @GetMapping("/list")
-    public BaseResponse<List<TeamVo>> getTeamList(HttpServletRequest request) {
-        return ResultUtils.success(teamService.getTeamList(request));
+    public BaseResponse<List<TeamVo>> getTeamList(
+            @RequestParam String searchText,
+            @RequestParam Integer pageNum,
+            @RequestParam Integer status, HttpServletRequest request) {
+        return ResultUtils.success(teamService.getTeamList(searchText, pageNum, status, request));
     }
 
     /**
@@ -116,8 +123,8 @@ public class TeamController {
      * @param request
      * @return
      */
-    @GetMapping("/quit/{teamId}")
-    public BaseResponse<Boolean> quitTeam(@PathVariable Long teamId, HttpServletRequest request) {
+    @GetMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestParam("teamId") Long teamId, HttpServletRequest request) {
         return ResultUtils.success(teamService.quitTeam(teamId, request));
     }
 
@@ -136,23 +143,25 @@ public class TeamController {
     /**
      * 获取当前用户已加入的队伍
      *
+     * @param teamQueryRequest
      * @param request
      * @return
      */
     @GetMapping("/list/my/join")
-    public BaseResponse<List<UserTeamVo>> listMyJoin(HttpServletRequest request) {
-        return ResultUtils.success(teamService.listMyJoin(request));
+    public BaseResponse<List<UserTeamVo>> listMyJoin(TeamQueryRequest teamQueryRequest, HttpServletRequest request) {
+        return ResultUtils.success(teamService.listMyJoin(teamQueryRequest, request));
     }
 
     /**
      * 获取当前用户创建的队伍
      *
+     * @param teamQueryRequest
      * @param request
      * @return
      */
     @GetMapping("/list/my/create")
-    public BaseResponse<List<UserTeamVo>> listMyCreate(HttpServletRequest request) {
-        return ResultUtils.success(teamService.listMyCreate(request));
+    public BaseResponse<List<UserTeamVo>> listMyCreate(TeamQueryRequest teamQueryRequest, HttpServletRequest request) {
+        return ResultUtils.success(teamService.listMyCreate(teamQueryRequest, request));
     }
 
 }

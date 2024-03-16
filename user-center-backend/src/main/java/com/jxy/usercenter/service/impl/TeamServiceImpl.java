@@ -27,6 +27,8 @@ import com.jxy.usercenter.service.TeamService;
 import com.jxy.usercenter.service.UserService;
 import com.jxy.usercenter.service.UserTeamService;
 import org.apache.poi.ss.formula.functions.T;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.crypto.Data;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +50,9 @@ import java.util.stream.Collectors;
 @Service
 public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     implements TeamService {
+
+    @Resource
+    private RedissonClient redissonClient;
 
     @Resource
     private TeamMapper teamMapper;
@@ -115,6 +121,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         // 4，插入队伍信息到队伍表
         Team team = new Team();
         BeanUtil.copyProperties(teamAddRequest, team);
+        team.setUserId(loginUser.getId());
         if (!save(team)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "创建队伍失败");
         }
@@ -208,12 +215,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public List<TeamVo> getTeamList(HttpServletRequest request) {
-        // 必须是管理员
-        if (!userService.isAdmin(request)) {
-            throw new BusinessException(ErrorCode.NO_AUTH);
+    public List<TeamVo> getTeamList(String searchText, Integer pageNum, Integer status, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
+        if (StrUtil.isNotBlank(searchText)) {
+            queryWrapper.and(qw -> qw.like("name", searchText).or().like("description", searchText));
         }
-        List<Team> teamList = teamMapper.selectList(null);
+        List<Team> teamList = teamMapper.selectList(new QueryWrapper<Team>().orderByDesc("createTime"));
         return teamList.stream().map(team -> {
             TeamVo teamVo = new TeamVo();
             BeanUtil.copyProperties(team, teamVo);
@@ -223,8 +231,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
     @Override
     public IPage<TeamVo> getTeamListPage(TeamQueryRequest teamQueryRequest, HttpServletRequest request) {
+        if (teamQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
         // 需要登录
-        userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser(request);
 
         Long id = teamQueryRequest.getId();
         String name = teamQueryRequest.getName();
@@ -255,7 +266,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             queryWrapper.eq("userId", userId);
         }
         // 公开状态可以直接搜索出来
-        if (TeamStatusEnum.PUBLIC.getValue() == status) {
+        if (status != null && TeamStatusEnum.PUBLIC.getValue() == status) {
             queryWrapper.eq("status", status);
         }
         // 搜索条件
@@ -267,10 +278,10 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         queryWrapper.and(qw -> qw.isNull("expireTime").or().gt("expireTime", new Date()));
 
         // 只有管理员才能查看加密还有非公开的房间
-        if (status >= 0 && TeamStatusEnum.PUBLIC.getValue() == status && userService.isAdmin(request)) {
+        if (status != null && status >= 0 && TeamStatusEnum.PUBLIC.getValue() == status && userService.isAdmin(request)) {
             queryWrapper.eq("status", status);
         }
-        if (TeamStatusEnum.SECRET.getValue() == status) {
+        if (status != null && TeamStatusEnum.SECRET.getValue() == status) {
             if (userService.isAdmin(request)) {
                 // 管理员
                 queryWrapper.eq("status", status);
@@ -298,6 +309,23 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                         .map(utId -> userService.getById(utId))
                         .map(user -> userService.getSafetyUser(user))
                         .collect(Collectors.toList()));
+
+                teamVo.setHasJoin(false);
+                if (teamVo.getTeamCaptainId().equals(loginUser.getId())) {
+                    teamVo.setHasJoin(true);
+                } else {
+                    // 加入 用户 是否加入队伍的标识
+                    List<User> teamMember = teamVo.getTeamMember();
+                    teamVo.setHasJoin(false);
+                    if (teamMember != null) {
+                        for (User user : teamMember) {
+                            if (user.getId().equals(loginUser.getId())) {
+                                teamVo.setHasJoin(true);
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 return teamVo;
             }).collect(Collectors.toList()));
@@ -355,12 +383,27 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码不正确");
             }
         }
-        // 新增队伍 - 用户关联信息
-        UserTeam userTeam = new UserTeam();
-        userTeam.setUserId(userId);
-        userTeam.setTeamId(teamJoinRequest.getTeamId());
-        userTeam.setJoinTime(new Date());
-        return userTeamService.save(userTeam);
+
+        RLock lock = redissonClient.getLock("partner:matching:join:lock");
+        while (true) {
+            try {
+                if (lock.tryLock(0, -1, TimeUnit.MICROSECONDS)) {
+                    // 新增队伍 - 用户关联信息
+                    UserTeam userTeam = new UserTeam();
+                    userTeam.setUserId(userId);
+                    userTeam.setTeamId(teamJoinRequest.getTeamId());
+                    userTeam.setJoinTime(new Date());
+                    return userTeamService.save(userTeam);
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                // 只能释放自己的锁
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }
+        }
     }
 
     @Override
@@ -423,18 +466,22 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public List<UserTeamVo> listMyJoin(HttpServletRequest request) {
+    public List<UserTeamVo> listMyJoin(TeamQueryRequest teamQueryRequest, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         Long userId = loginUser.getId();
-        List<UserTeam> userTeamList = userTeamMapper.selectList(new QueryWrapper<UserTeam>().eq("userId", userId));
-        return userTeamList.stream()
-                .map(UserTeam::getTeamId)
-//                .map(teamId -> teamMapper.selectById(teamId))
-                .map(teamId -> teamMapper.selectOne(new QueryWrapper<Team>().eq("teamId", teamId).ne("userId", userId)))
-                .map(team -> {
-                    if (team.getExpireTime().before(new Date())) {
-                        return null;
+        IPage<TeamVo> page = getTeamListPage(teamQueryRequest, request);
+        return page.getRecords().stream().filter(teamVo -> {
+                    // 是队长
+                    if (teamVo.getTeamCaptainId().equals(userId)) {
+                        return false;
                     }
+                    for (User user : teamVo.getTeamMember()) {
+                        if (user.getId().equals(userId)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }).map(team -> {
                     UserTeamVo userTeamVo = new UserTeamVo();
                     BeanUtil.copyProperties(team, userTeamVo);
                     return userTeamVo;
@@ -443,17 +490,26 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public List<UserTeamVo> listMyCreate(HttpServletRequest request) {
+    public List<UserTeamVo> listMyCreate(TeamQueryRequest teamQueryRequest, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         Long userId = loginUser.getId();
-        List<Team> teamList = teamMapper.selectList(new QueryWrapper<Team>().eq("userId", userId).gt("expireTime", new Date()));
-        return teamList.stream()
+        IPage<TeamVo> page = getTeamListPage(teamQueryRequest, request);
+        return page.getRecords().stream()
+                .filter(teamVo -> teamVo.getTeamCaptainId().equals(userId))
                 .map(team -> {
                     UserTeamVo userTeamVo = new UserTeamVo();
                     BeanUtil.copyProperties(team, userTeamVo);
                     return userTeamVo;
                 })
                 .collect(Collectors.toList());
+//        List<Team> teamList = teamMapper.selectList(new QueryWrapper<Team>().eq("userId", userId).gt("expireTime", new Date()));
+//        return teamList.stream()
+//                .map(team -> {
+//                    UserTeamVo userTeamVo = new UserTeamVo();
+//                    BeanUtil.copyProperties(team, userTeamVo);
+//                    return userTeamVo;
+//                })
+//                .collect(Collectors.toList());
     }
 
 

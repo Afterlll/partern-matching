@@ -63,6 +63,11 @@ public class TeamVo implements Serializable {
      */
     private Long teamCaptainId;
 
+    /*
+    * 是否在队伍中
+     */
+    private Boolean hasJoin;
+
     /**
      * 队伍成员
      */
