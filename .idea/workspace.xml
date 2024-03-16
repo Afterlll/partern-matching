@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f947bf79-26b8-40a0-89ba-de4741835f5d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/config/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/config/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/partner-matching-frontend/src/layouts/BasicLayout.vue" beforeDir="false" afterPath="$PROJECT_DIR$/partner-matching-frontend/src/layouts/BasicLayout.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-center-backend/README.md" beforeDir="false" />
-    </list>
+    <list default="true" id="f947bf79-26b8-40a0-89ba-de4741835f5d" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -229,7 +225,7 @@
       <workItem from="1710060608915" duration="12489000" />
       <workItem from="1710122001342" duration="26707000" />
       <workItem from="1710297607019" duration="26135000" />
-      <workItem from="1710469221763" duration="26555000" />
+      <workItem from="1710469221763" duration="26912000" />
     </task>
     <servers />
   </component>

@@ -9,32 +9,25 @@
 
 主页：
 
-![](https://yupi-picture-1256524210.cos.ap-shanghai.myqcloud.com/1/image-20221023120231097.png)
-
+![img.png](img%2Fimg.png)![img.png](img/img.png)
 
 
 找伙伴：
-
-![](https://yupi-picture-1256524210.cos.ap-shanghai.myqcloud.com/1/image-20221023120338802.png)
-
+![img_5.png](img%2Fimg_5.png)
 
 
 组队功能：
-
-![](https://yupi-picture-1256524210.cos.ap-shanghai.myqcloud.com/1/image-20221023120253418.png)
+![img_1.png](img%2Fimg_1.png)
 
 
 
 创建队伍：
-
-![](https://yupi-picture-1256524210.cos.ap-shanghai.myqcloud.com/1/image-20221023120311527.png)
-
+![img_2.png](img%2Fimg_2.png)
 
 
 个人信息及修改：
-
-![img](https://yupi-picture-1256524210.cos.ap-shanghai.myqcloud.com/1/image-20221023120321632.png)
-
+![img_3.png](img%2Fimg_3.png)
+![img_4.png](img%2Fimg_4.png)
 
 
 这个该项目基本覆盖了企业开发中常见的需求以及对应的解决方案，比如登录注册、批量数据导入、信息检索展示、定时任务、资源抢占等。并且涵盖了分布式、并发编程、锁、事务、缓存、性能优化、幂等性、数据一致性、大数据、算法等后端程序员必须了解的知识与实践。
